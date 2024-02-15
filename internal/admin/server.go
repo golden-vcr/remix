@@ -39,40 +39,40 @@ func (s *Server) RegisterRoutes(c auth.Client, r *mux.Router) {
 }
 
 func (s *Server) handlePostClip(res http.ResponseWriter, req *http.Request) {
-	// Parse and validate the request payload
-	var payload remix.ClipSync
-	if err := json.NewDecoder(req.Body).Decode(&payload); err != nil {
+	// Parse and validate the request clip
+	var clip remix.Clip
+	if err := json.NewDecoder(req.Body).Decode(&clip); err != nil {
 		http.Error(res, err.Error(), http.StatusBadRequest)
 		return
 	}
-	if payload.Id == "" {
+	if clip.Id == "" {
 		http.Error(res, "'id' value is required", http.StatusBadRequest)
 		return
 	}
-	if payload.Title == "" {
+	if clip.Title == "" {
 		http.Error(res, "'title' value is required", http.StatusBadRequest)
 		return
 	}
-	if payload.Duration <= 0 {
+	if clip.Duration <= 0 {
 		http.Error(res, "'duration' value is required", http.StatusBadRequest)
 		return
 	}
-	if payload.TapeId <= 0 {
+	if clip.TapeId <= 0 {
 		http.Error(res, "'tapeId' value is required", http.StatusBadRequest)
 		return
 	}
 
 	// Update the DB to reflect our new desired state for this clip
 	if err := s.q.SyncClip(req.Context(), queries.SyncClipParams{
-		ID:       payload.Id,
-		Title:    payload.Title,
-		Duration: int32(payload.Duration),
-		TapeID:   int32(payload.TapeId),
+		ID:       clip.Id,
+		Title:    clip.Title,
+		Duration: int32(clip.Duration),
+		TapeID:   int32(clip.TapeId),
 	}); err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	entry.Log(req).Info("Synced clip details", "payload", payload)
+	entry.Log(req).Info("Synced clip details", "clip", clip)
 	res.WriteHeader(http.StatusNoContent)
 }
