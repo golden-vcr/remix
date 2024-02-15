@@ -71,7 +71,7 @@ components:
       properties:
         id:
           type: string
-          description: Unique identifier for this tape; matching its filename without extension
+          description: Unique identifier for this clip; matching its filename without extension
           example: you_are_the_one
         title:
           type: string
