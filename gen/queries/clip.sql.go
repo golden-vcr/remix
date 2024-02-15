@@ -9,6 +9,51 @@ import (
 	"context"
 )
 
+const getClips = `-- name: GetClips :many
+select
+    clip.id,
+    clip.title,
+    clip.duration,
+    clip.tape_id
+from remix.clip
+order by clip.created_at
+`
+
+type GetClipsRow struct {
+	ID       string
+	Title    string
+	Duration int32
+	TapeID   int32
+}
+
+func (q *Queries) GetClips(ctx context.Context) ([]GetClipsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getClips)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetClipsRow
+	for rows.Next() {
+		var i GetClipsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.Duration,
+			&i.TapeID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const syncClip = `-- name: SyncClip :exec
 insert into remix.clip (
     id,

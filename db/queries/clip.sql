@@ -16,3 +16,12 @@ on conflict (id) do update set
     title = excluded.title,
     duration = excluded.duration,
     tape_id = excluded.tape_id;
+
+-- name: GetClips :many
+select
+    clip.id,
+    clip.title,
+    clip.duration,
+    clip.tape_id
+from remix.clip
+order by clip.created_at;
