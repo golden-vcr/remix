@@ -1,0 +1,99 @@
+openapi: 3.0.3
+info:
+  version: 0.1.0
+  title: remix
+  description: |
+    The **remix** service keeps track of clips that we've grabbed from tapes, and it
+    allows us to queue those clips for playback by viewer demand.
+externalDocs:
+  description: 'github.com/golden-vcr/remix'
+  url: https://github.com/golden-vcr/remix
+servers:
+  - url: https://goldenvcr.com/api/remix
+tags:
+  - name: admin
+    description: |-
+      Endpoints that allow the broadcaster to register clips and directly update state
+  - name: state
+    description: |-
+      Endpoints that serve read-only information about clips
+paths:
+  /admin/clip:
+    post:
+      tags:
+        - admin
+      summary: |-
+        Registers a new clip, or updates an existing clip's details
+      operationId: postClip
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Clip'
+      security:
+        - twitchUserAccessToken: []
+      description: |-
+        Requires **broadcaster** authorization. If no clip yet exists with the given ID,
+        a new clip will be created. If the provided ID matches an existing clip, that
+        clip's details will be updated according to the request.
+      responses:
+        '204':
+          description: |-
+            The clip has been successfully synced.
+        '400':
+          description: |-
+            Request payload was invalid; no changes were made.
+        '401':
+          description: |-
+            Unauthenticated; client identity could not be verified.
+        '403':
+          description: |-
+            Unauthorized; client is not the broadcaster.
+  /clips:
+    get:
+      tags:
+        - state
+      summary: |-
+        Returns the details of all available clips
+      operationId: getClips
+      responses:
+        '200':
+          description: |-
+            OK; clip data was succesfully fetched
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClipListing'
+components:
+  schemas:
+    Clip:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for this tape; matching its filename without extension
+          example: you_are_the_one
+        title:
+          type: string
+          description: User-facing title describing this clip
+          example: God's Property - You are the One
+        duration:
+          type: integer
+          description: Total duration of this clip, in seconds
+          example: 215
+        tapeId:
+          type: integer
+          description: ID of the tape from which this clip was taken originally
+          example: 17
+    ClipListing:
+      type: object
+      properties:
+        clips:
+          type: array
+          description: Listing of all requested clips
+          items:
+            $ref: '#/components/schemas/Clip'
+  securitySchemes:
+    twitchUserAccessToken:
+      type: http
+      scheme: bearer
