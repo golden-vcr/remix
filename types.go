@@ -8,3 +8,8 @@ type Clip struct {
 	Duration int    `json:"duration"`
 	TapeId   int    `json:"tapeId"`
 }
+
+// ClipListing is the response payload for GET /clips
+type ClipListing struct {
+	Clips []Clip `json:"clips"`
+}

@@ -12,6 +12,7 @@ import (
 	"github.com/golden-vcr/auth"
 	"github.com/golden-vcr/remix/gen/queries"
 	"github.com/golden-vcr/remix/internal/admin"
+	"github.com/golden-vcr/remix/internal/state"
 	"github.com/golden-vcr/server-common/db"
 	"github.com/golden-vcr/server-common/entry"
 )
@@ -79,6 +80,13 @@ func main() {
 	{
 		adminServer := admin.NewServer(q)
 		adminServer.RegisterRoutes(authClient, r.PathPrefix("/admin").Subrouter())
+	}
+
+	// Any client (no auth required) can call the state API to get read-only information
+	// about available clips etc.
+	{
+		stateServer := state.NewServer(q)
+		stateServer.RegisterRoutes(r)
 	}
 
 	// Handle incoming HTTP connections until our top-level context is canceled, at
